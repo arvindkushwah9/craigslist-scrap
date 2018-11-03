@@ -22,3 +22,12 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+## To start Redis
+sudo service redis-server restart
+##clear rediscache
+redis-cli flushall
+
+## To Start Sidekiq in production env
+bundle exec sidekiq -d -L sidekiq.log -q mailer,5 -q default -e production
+
+heroku ps:scale worker+1

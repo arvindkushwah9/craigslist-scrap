@@ -1,0 +1,20 @@
+<div class="row" id="wrapper">		
+		<table class="table">
+		  <thead>
+		    <tr>
+		      <th scope="col">URL</th>
+		      <th scope="col">EMAIL</th>
+		      <th scope="col">STATUS</th>
+		    </tr>
+		  </thead>
+		  <tbody>
+		  	<% @entries.each do |entry| %>
+		    <tr>
+		      <td><%=link_to entry[:link], entry[:link] %></td>
+		      <td><span id="email-<%= entry[:id]%>"></span></td>
+		      <td><span class="text-danger" id="status-<%= entry[:id]%>">Pending</span></td>
+		    </tr>
+		    <% end %>		    
+		  </tbody>
+		</table>
+</div>
