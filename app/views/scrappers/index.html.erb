@@ -1,0 +1,71 @@
+<h3><%= @entries.count %> URL's found, all urls added in the quoue to process.</h3><hr />
+
+<div class="progress-files-count"></div>
+<div class="progress">
+  <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><span class="progress-files-percentage">0</span></div>
+</div>
+
+<div class="row" id="wrapper">
+		<% @entries.each do |entry| %>
+			<div class="col-md-6 well">
+				<%=link_to entry[:link], entry[:link] %>
+		  </div>
+		  <div class="col-md-4 well">
+				<span id="email-<%= entry[:id]%>"></span>
+		  </div>
+			<div class="col-md-2 well">
+				<span class="text-danger" id="status-<%= entry[:id]%>">Pending</span>
+			</div>
+		<%end%>	
+</div>
+
+
+<script type="text/javascript">
+	var entries = <%= raw @entries.map{|e| e[:link]} %>;
+	var entries_ids = <%= raw @entries.map{|e| e[:id]} %>;
+	var total_entries = <%= raw @entries.count %>;
+	var each_progress = 100/total_entries;
+	var count = 0;
+	ajax_upload(count, total_entries, each_progress, entries[0], entries_ids[0]);
+	function ajax_upload(count, total_entries, each_progress, url, id){
+		$(".progress-upload").show();
+		$("#status-"+ entries_ids[count]).html('InProcessing');
+		$("#status-"+ entries_ids[count]).removeClass('text-danger');
+		$("#status-"+ entries_ids[count]).addClass('text-info');
+
+		var progress_files_count = count + " / " + total_entries;
+		$(".progress-files-count").html(progress_files_count);
+		var formData = new FormData();
+		formData.append("url", url)
+
+		$.ajax({
+			url: '/scrap_single_url',
+			type: 'POST',
+			 dataType: "json",
+			success: function (data){
+				$("#status-"+ entries_ids[count]).html('Completed');
+				$("#status-"+ entries_ids[count]).removeClass('text-info');
+		    $("#status-"+ entries_ids[count]).addClass('text-success');
+		    $("#email-"+ entries_ids[count]).html(data.email);
+
+			count++;
+			console.log("Success", data)
+			var progress_files_count = count + " / " + total_entries;
+			$(".progress-files-count").html(progress_files_count);
+			progress = parseInt(count * each_progress) + "%";
+			$(".progress-bar").css("width", progress);
+			$(".progress-files-percentage").html(progress);
+			if (count < total_entries){
+			ajax_upload(count, total_entries, each_progress, entries[count], entries_ids[count]);
+			}
+			else {
+				$("#wrapper").append("<a class='btn btn-primary pull-right' href='/'>DONE</a>")			}
+			},
+			data: formData,
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	}
+
+</script>
