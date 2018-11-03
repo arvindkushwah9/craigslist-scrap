@@ -11,7 +11,7 @@ class ScrappersController < ApplicationController
     redirected_url = url.base_uri.to_s
     doc = Nokogiri::HTML(open(redirected_url))
    
-    @entries = doc.css('a').each_with_index.map { |link,index| {:link=> link['href'], title: link.text, id: index+1} if ["#", "/"].exclude? link['href']}.compact.uniq.take(20)
+    @entries = doc.css('a').each_with_index.map { |link,index| {:link=> link['href'], title: link.text, id: index+1} if ["#", "/"].exclude? link['href']}.compact.uniq
      urls =  @entries.map { |link| link[:link]}
     SaveUrlsWorker.perform_async(redirected_url, urls)
   end
@@ -52,7 +52,7 @@ class ScrappersController < ApplicationController
   end
 
   def results
-    @entries = Url.all.uniq { |i| i.url }.each_with_index.map { |link,index| {:link=> link.url, id: index+1 } if ["/","#"].exclude? link.url }.compact.uniq.take(20)
+    @entries = Url.all.uniq { |i| i.url }.each_with_index.map { |link,index| {:link=> link.url, id: index+1 } if ["/","#"].exclude? link.url }.compact.uniq
   end
 
 end
