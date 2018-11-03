@@ -36,7 +36,7 @@ class ScrappersController < ApplicationController
   	    doc = Nokogiri::HTML(open(redirected_url))       
         urls = doc.css('a').map { |link| link['href']}
 
-        SaveUrlsWorker.perform_async(url, urls)
+        SaveUrlsWorker.perform_async(redirected_url, urls)
 
   	    html_string   = doc.css('body').to_s
   	    email_address = html_string.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i)[0] rescue "No email found"

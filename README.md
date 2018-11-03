@@ -22,12 +22,18 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+1. cd craigslist-scrap
+2. bundle install
+3. rake db:setup
+4. rails s
+5. Run Sidekiq for background process
+
 ## To start Redis
+
 sudo service redis-server restart
+
 ##clear rediscache
 redis-cli flushall
 
 ## To Start Sidekiq in production env
 bundle exec sidekiq -d -L sidekiq.log -q mailer,5 -q default -e production
-
-heroku ps:scale worker+1
