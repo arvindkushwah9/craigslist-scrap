@@ -1,19 +1,22 @@
 class ScrappersController < ApplicationController
 
   def index
-  	require 'open-uri'
-  	if params[:domain]
-	    url = open(params[:domain])
-	  else
-	    url = open('https://newyork.craigslist.org')
-	  end
-    # Sometime url redirected to other domain
-    redirected_url = url.base_uri.to_s
-    doc = Nokogiri::HTML(open(redirected_url))
-   
-    @entries = doc.css('a').each_with_index.map { |link,index| {:link=> link['href'], title: link.text, id: index+1} if ["#", "/"].exclude? link['href']}.compact.uniq
-     urls =  @entries.map { |link| link[:link]}
-    SaveUrlsWorker.perform_async(redirected_url, urls)
+    begin
+    	require 'open-uri'
+    	if params[:domain]
+  	    url = open(params[:domain])
+  	  else
+  	    url = open('https://newyork.craigslist.org')
+  	  end
+      # Sometime url redirected to other domain
+      redirected_url = url.base_uri.to_s
+      doc = Nokogiri::HTML(open(redirected_url))
+     
+      @entries = doc.css('a').each_with_index.map { |link,index| {:link=> link['href'], title: link.text, id: index+1} if ["#", "/"].exclude? link['href']}.compact.uniq
+       urls =  @entries.map { |link| link[:link]}
+      SaveUrlsWorker.perform_async(redirected_url, urls)
+    rescue
+    end
   end
 
   def scrap_single_url
@@ -52,7 +55,12 @@ class ScrappersController < ApplicationController
   end
 
   def results
-    @entries = Url.all.uniq { |i| i.url }.each_with_index.map { |link,index| {:link=> link.url, id: index+1 } if ["/","#"].exclude? link.url }.compact.uniq
+    if params[:step] == "2"
+      urls = Url.where("url like ? ", "%.html%")
+    else
+      urls = Url.all
+    end
+    @entries = urls.uniq { |i| i.url }.each_with_index.map { |link,index| {:link=> link.url, id: index+1 } if ["/","#"].exclude? link.url }.compact.uniq
   end
 
 end
